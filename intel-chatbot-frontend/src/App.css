@@ -1,15 +1,111 @@
-.App {
-  text-align: center;
+body {
+  font-family: 'Arial', sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+  background: #f0f0f0;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.container {
+  width: 800px;
+  height: 500px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+}
+
+.form-container {
+  width: 100%;
+  height: 100%;
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  transition: transform 0.6s ease-in-out;
+}
+
+.left-panel,
+.right-panel {
+  flex: 1;
+  display: flex;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
+  align-items: center;
+  flex-direction: column;
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+.left-panel {
+  background: #2cc8ca;
   color: white;
+}
+
+.right-panel {
+  background: white;
+  color: black;
+}
+
+h2 {
+  margin: 0 0 1rem;
+}
+
+p {
+  margin: 0 0 2rem;
+}
+
+button {
+  border: none;
+  padding: 0.75rem 1.5rem;
+  margin: 0.5rem 0;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+button span {
+  color: #2cc8ca;
+  text-decoration: underline;
+}
+
+button:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+input {
+  width: 100%;
+  padding: 0.75rem;
+  margin: 0.5rem 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+
+.sign-up-form h2,
+.login-form h2 {
+  margin-bottom: 1.5rem;
+}
+
+.sign-up-mode .form-container {
+  transform: translateX(0);
+}
+
+.login-mode .form-container {
+  transform: translateX(-50%);
+}
+
+.sign-up-mode .left-panel {
+  transform: translateX(0);
+}
+
+.sign-up-mode .right-panel {
+  transform: translateX(0);
+}
+
+.login-mode .left-panel {
+  transform: translateX(100%);
+}
+
+.login-mode .right-panel {
+  transform: translateX(-100%);
 }
 

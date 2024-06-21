@@ -136,12 +136,7 @@ function App() {
       });
   }
 
-  // function logout() {
-  //   setUserToken(null);
-  //   clearUserToken();
-  //   clearUserName();
-  //   clearUserEmail();
-  // }
+  
 
   const toggleForm = () => {
     setIsSignUp(!isSignUp);

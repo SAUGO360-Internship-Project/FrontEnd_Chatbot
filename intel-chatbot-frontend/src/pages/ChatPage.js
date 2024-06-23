@@ -1,10 +1,12 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { Box, Menu, MenuItem, Drawer, List, ListItem, ListItemText, AppBar, Toolbar, Typography, Paper, IconButton } from '@mui/material';
+import { Box, Menu, MenuItem, Drawer, List, ListItem, ListItemText, AppBar, Toolbar, Typography, Paper, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import SendIcon from '@mui/icons-material/Send';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import { useNavigate } from 'react-router-dom';
 import { clearUserEmail, clearUserName, clearUserToken, getUserToken } from '../localStorage';
-import AddIcon from '@mui/icons-material/Add'; // Importing the add icon for new chat button
+import AddIcon from '@mui/icons-material/Add';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import './ChatPage.css';
 import { SERVER_URL } from '../App';
 
@@ -15,17 +17,27 @@ function ChatPage() {
   let [messages, setMessages] = useState([]);
   let [userToken, setUserToken] = useState(getUserToken());
   let [suggestedQuestions, setSuggestedQuestions] = useState([
-    'Quiz me on ancient civilizations',
-    'Experience Seoul like a local',
-    'Morning routine for productivity',
-    'Pick outfit to look good on camera'
+    'How many customers are called Emily',
+    'What is the purchase history of Robert Smith',
+    'How much milk did Linda Garcia buy',
+    'What is the age of Alex Jones'
   ]);
   let [inputValue, setInputValue] = useState('');
   let [chats, setChats] = useState([]);
   let [newChatTitle, setNewChatTitle] = useState('');
   let [isAddingChat, setIsAddingChat] = useState(false);
   let [anchorEl, setAnchorEl] = useState(null);
+  let [currentChatId, setCurrentChatId] = useState(null);
+  let [menuAnchorEl, setMenuAnchorEl] = useState(null);
+  let [selectedChatId, setSelectedChatId] = useState(null);
+  let [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
+  let [renameChatTitle, setRenameChatTitle] = useState('');
+  let [chatMessages, setChatMessages] = useState({});
+
+
   const isMenuOpen = Boolean(anchorEl);
+  const isChatMenuOpen = Boolean(menuAnchorEl);
+  const navigate = useNavigate();
 
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -35,40 +47,73 @@ function ChatPage() {
     setAnchorEl(null);
   };
 
+  const handleChatMenuOpen = (event, chatId) => {
+    setMenuAnchorEl(event.currentTarget);
+    setSelectedChatId(chatId);
+  };
 
+  const handleChatMenuClose = () => {
+    setMenuAnchorEl(null);
+  };
 
   const handleSendMessage = (message) => {
+    if (!message) {
+      return;
+    }
+
     const newMessage = { text: message, sender: 'user' };
     setMessages((prevMessages) => [...prevMessages, newMessage]);
     setInputValue('');
-    // Simulate a response from the backend
-    setTimeout(() => {
-      const responseMessage = { text: `Response to: ${message}`, sender: 'bot' };
-      setMessages((prevMessages) => [...prevMessages, responseMessage]);
-    }, 1000);
-    if (suggestedQuestions.length > 0) {
-      setSuggestedQuestions([]);
+
+    if (!currentChatId) {
+      const generatedTitle = generateChatTitle(message);
+      createChat(generatedTitle, message);
+    } else {
+      sendMessageToChat(message, currentChatId);
     }
+
+    setChatMessages((prevChatMessages) => ({
+      ...prevChatMessages,
+      [currentChatId]: true,
+    }));
   };
 
-  const handleInputChange = (event) => {
-    setInputValue(event.target.value);
-    adjustTextareaHeight(event.target);
+
+  const sendMessageToChat = (message, chatId) => {
+    fetch(`${SERVER_URL}/chat/ask`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `bearer ${userToken}`,
+      },
+      body: JSON.stringify({ question: message, chat_id: chatId }),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Couldn't send a question, try again later");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        const responseMessage = { text: data.response, sender: 'bot' };
+        setMessages((prevMessages) => [...prevMessages, responseMessage]);
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+      });
   };
 
-  const adjustTextareaHeight = (textarea) => {
-    textarea.style.height = 'auto'; // Reset the height
-    textarea.style.height = textarea.scrollHeight + 'px'; // Set the height based on the scroll height
+  const generateChatTitle = (message) => {
+    const words = message.split(' ');
+    const title = words.slice(0, 5).join(' ') + (words.length > 5 ? '...' : '');
+    return title;
   };
 
-  const handleSuggestedQuestionClick = (question) => {
-    handleSendMessage(question);
-  };
-
-  function createChat(title) {
+  const createChat = (title, initialMessage) => {
+    let chatTitle = title;
     if (!title) {
-      alert("Please enter a suitable title");
-      return;
+      const randomIndex = Math.floor(Math.random() * suggestedQuestions.length);
+      chatTitle = suggestedQuestions[randomIndex];
     }
 
     fetch(`${SERVER_URL}/chat/chats`, {
@@ -77,20 +122,43 @@ function ChatPage() {
         "Content-Type": "application/json",
         Authorization: `bearer ${userToken}`
       },
-      body: JSON.stringify({ title: title }),
+      body: JSON.stringify({ title: chatTitle }),
     })
-      .then((response) => response.json())
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Creating a chat failed");
+        }
+        return response.json();
+      })
       .then((data) => {
         if (data) {
           setChats((prevChats) => [...prevChats, data]);
           setNewChatTitle('');
-          setIsAddingChat(false);
+          setCurrentChatId(data.id);
+          setIsAddingChat(false); // Hide the input field
+          if (initialMessage) {
+            sendMessageToChat(initialMessage, data.id);
+          }
         }
       })
       .catch((error) => {
         alert(error.error);
       });
-  }
+  };
+
+  const handleInputChange = (event) => {
+    setInputValue(event.target.value);
+    adjustTextareaHeight(event.target);
+  };
+
+  const adjustTextareaHeight = (textarea) => {
+    textarea.style.height = 'auto';
+    textarea.style.height = textarea.scrollHeight + 'px';
+  };
+
+  const handleSuggestedQuestionClick = (question) => {
+    handleSendMessage(question);
+  };
 
   const getChats = useCallback(() => {
     fetch(`${SERVER_URL}/chat/chats`, {
@@ -102,42 +170,133 @@ function ChatPage() {
     })
       .then((response) => {
         if (!response.ok) {
-          throw new Error("fetching chats failed");
+          throw new Error("Fetching chats failed");
         }
-        return response.json()
+        return response.json();
       })
       .then((data) => {
         if (data) {
-          setChats(data); // Update the chat list with the new chat
+          setChats(data);
         }
       })
-
       .catch((error) => {
-        alert(error.message); // Display the error message from the backend
+        alert(error.message);
         return;
       });
   }, [userToken]);
+
+  const getConversations = useCallback((chatId) => {
+    fetch(`${SERVER_URL}/chat/chats/${chatId}/conversations`, {
+      method: "GET",
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `bearer ${userToken}`,
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Fetching conversations failed");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        if (data) {
+          const newMessages = data.flatMap(convo => ([
+            { text: convo.user_query, sender: 'user' },
+            { text: convo.response, sender: 'bot' }
+          ]));
+          setMessages(newMessages);
+          setChatMessages((prevChatMessages) => ({
+            ...prevChatMessages,
+            [chatId]: newMessages.length > 0,
+          }));
+        }
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+      });
+  }, [userToken]);
+
+
+
   useEffect(() => {
     if (userToken) {
       getChats();
     }
   }, [getChats, userToken]);
 
+  const handleChatClick = (chatId) => {
+    setCurrentChatId(chatId);
+    getConversations(chatId);
+  };
 
+  const handleRenameChat = () => {
+    if (!renameChatTitle.trim()) {
+      alert('Chat title cannot be empty');
+      return;
+    }
+
+    fetch(`${SERVER_URL}/chat/chats/${selectedChatId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `bearer ${userToken}`,
+      },
+      body: JSON.stringify({ title: renameChatTitle }),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Renaming chat failed');
+        }
+        return response.json();
+      })
+      .then((data) => {
+        getChats();
+        setIsRenameDialogOpen(false);
+        setRenameChatTitle('');
+        handleChatMenuClose();
+      })
+      .catch((error) => {
+        alert(error.message);
+      });
+  };
+
+
+  const handleDeleteChat = () => {
+    fetch(`${SERVER_URL}/chat/chats/${selectedChatId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `bearer ${userToken}`,
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Deleting chat failed');
+        }
+        setChats((prevChats) => prevChats.filter(chat => chat.id !== selectedChatId));
+        handleChatMenuClose();
+        setMessages([]);
+        setCurrentChatId(null);
+      })
+      .catch((error) => {
+        alert(error.message);
+      });
+  };
 
   function logout() {
     setUserToken(null);
     clearUserToken();
     clearUserName();
     clearUserEmail();
+    navigate('App');
   }
 
   return (
     <Box className={`app-container ${open ? 'open' : 'closed'}`}>
-      {/* AppBar with IconButton to open/close sidebar */}
       <AppBar className={`app-bar ${open ? 'open' : 'closed'}`} position="fixed">
         <Toolbar>
-          {!open && (  // Show MenuIcon only if sidebar is closed
+          {!open && (
             <IconButton
               color="inherit"
               aria-label={open ? "close drawer" : "open drawer"}
@@ -160,14 +319,11 @@ function ChatPage() {
             open={isMenuOpen}
             onClose={handleMenuClose}
           >
-            {/* <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
-            <MenuItem onClick={handleMenuClose}>My account</MenuItem> */}
             <MenuItem onClick={() => { handleMenuClose(); logout(); }}>Logout</MenuItem>
           </Menu>
         </Toolbar>
       </AppBar>
 
-      {/* Drawer with new chat button on the upper right */}
       <Drawer
         sx={{
           width: drawerWidth,
@@ -213,28 +369,32 @@ function ChatPage() {
         )}
         <List>
           {chats.map((chat) => (
-            <ListItem button key={chat.id}>
+            <ListItem button key={chat.id} onClick={() => handleChatClick(chat.id)}>
               <ListItemText primary={chat.title} />
+              <IconButton onClick={(event) => handleChatMenuOpen(event, chat.id)}>
+                <MoreVertIcon />
+              </IconButton>
             </ListItem>
           ))}
         </List>
       </Drawer>
 
-      {/* Chat content area with suggested questions and messages */}
       <Box className={`chat-content ${open ? 'open' : 'closed'}`}>
-        <Box className="suggested-questions-container">
-          {suggestedQuestions.map((text, index) => (
-            <Paper
-              key={index}
-              className="suggested-question-card"
-              onClick={() => handleSuggestedQuestionClick(text)}
-            >
-              <Typography variant="body1">
-                {text}
-              </Typography>
-            </Paper>
-          ))}
-        </Box>
+        {(!chatMessages[currentChatId] && suggestedQuestions.length > 0) && (
+          <Box className="suggested-questions-container">
+            {suggestedQuestions.map((text, index) => (
+              <Paper
+                key={index}
+                className="suggested-question-card"
+                onClick={() => handleSuggestedQuestionClick(text)}
+              >
+                <Typography variant="body1">
+                  {text}
+                </Typography>
+              </Paper>
+            ))}
+          </Box>
+        )}
         {messages.map((message, index) => (
           <Box
             key={index}
@@ -253,7 +413,7 @@ function ChatPage() {
         ))}
       </Box>
 
-      {/* Chat box area with text input and send button */}
+
       <div className={`chat-box-container ${open ? 'open' : 'closed'}`}>
         <textarea className='chat-input'
           variant="outlined"
@@ -264,6 +424,7 @@ function ChatPage() {
           onChange={handleInputChange}
           onKeyDown={(event) => {
             if (event.key === 'Enter') {
+              event.preventDefault();
               handleSendMessage(inputValue);
             }
           }}
@@ -275,6 +436,34 @@ function ChatPage() {
           <SendIcon />
         </IconButton>
       </div>
+
+      <Menu
+        anchorEl={menuAnchorEl}
+        open={isChatMenuOpen}
+        onClose={handleChatMenuClose}
+      >
+        <MenuItem onClick={() => { setIsRenameDialogOpen(true); handleChatMenuClose(); }}>Rename</MenuItem>
+        <MenuItem onClick={handleDeleteChat}>Delete</MenuItem>
+      </Menu>
+
+      <Dialog open={isRenameDialogOpen} onClose={() => setIsRenameDialogOpen(false)}>
+        <DialogTitle>Rename Chat</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Chat Title"
+            type="text"
+            fullWidth
+            value={renameChatTitle}
+            onChange={(e) => setRenameChatTitle(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setIsRenameDialogOpen(false)}>Cancel</Button>
+          <Button onClick={handleRenameChat}>Save</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

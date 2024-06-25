@@ -36,6 +36,7 @@
   justify-content: flex-end;
 }
 
+
 .chat-content {
   flex-grow: 1;
   overflow-y: auto;
@@ -47,12 +48,19 @@
   margin-bottom: 5%;
   transition: margin 225ms cubic-bezier(0.4, 0.0, 0.2, 1);
   z-index: 0;
-  width: 100%; /* Adjust this value to make it wider or narrower */
+  width: 100%; 
+  height: calc(100vh - 100px);
 }
 
 .chat-content.open {
   margin-left: 100px;
   /* Adjust margin when sidebar is open */
+}
+
+.period-title {
+  font-size: small !important;
+  font-family: 'Arial', sans-serif;
+  color: #aeb1be; /* Change to desired color */
 }
 
 .suggested-questions-container {
@@ -97,22 +105,33 @@
   /* Ensure chat box is above everything */
 }
 
+.chat-box-container .loading-indicator {
+  margin-left: 16px;
+}
+
+.active-chat {
+  background-color: #d5d7d7 !important;
+  border-radius: 20px !important;
+}
+
 .chat-input {
   width: 100%;
-  height: 60px;
+  min-height: 50px;
   max-height: 200px;
-  padding:2%; 
+  padding:15px; 
   font-size: 16px;
-  border-radius: 30px;
-  resize: none; /* Prevent manual resizing */
-  overflow-y: auto; /* Enable vertical scrolling */
+  border-radius: 20px;
+  resize: none; 
   background-color: rgb(230, 227, 227);
   outline: none;
   border: 1px solid #ccc;
   box-sizing: border-box;
-  line-height: 20px; /* Ensure vertical alignment */
+  line-height: 20px; 
 }
-
+.messages-content {
+  width: auto; 
+  max-width: 400px;
+}
 .chat-input::placeholder {
   line-height: 20px; 
 }
@@ -123,3 +142,4 @@
   width: calc(70% - 40px);
  max-width: calc(100% - 40px);
 }
+

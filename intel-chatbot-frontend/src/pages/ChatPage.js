@@ -12,7 +12,7 @@ import {
   ThumbDown as ThumbDownIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { clearUserEmail, clearUserName, clearUserToken, getUserToken } from '../localStorage';
+import { clearUserEmail, clearUserName, clearUserToken, getUserName, getUserToken } from '../localStorage';
 
 import './ChatPage.css';
 import { SERVER_URL } from '../App';
@@ -23,6 +23,7 @@ function ChatPage() {
   let [open, setOpen] = useState(true);
   let [messages, setMessages] = useState([]);
   let [userToken, setUserToken] = useState(getUserToken());
+  let [username, setUserName] = useState(getUserName())
   let [suggestedQuestions, setSuggestedQuestions] = useState([
     'How many customers are called Emily',
     'What is the purchase history of Robert Smith',
@@ -40,9 +41,12 @@ function ChatPage() {
   let [renameChatTitle, setRenameChatTitle] = useState('');
   let [chatMessages, setChatMessages] = useState({});
   let [loading, setLoading] = useState(false);
+  let [loadingFB, setLoadinFB] = useState(false)
   let [feedbackComment, setFeedbackComment] = useState('');
+  let [originalMessage, setOrignalMessage] = useState('');
   let [snackbarOpen, setSnackbarOpen] = useState(false);
   let [isFeedbackDialogOpen, setIsFeedbackDialogOpen] = useState(false);
+  let [conversationId, setConversationId] = useState(null);
 
   const isMenuOpen = Boolean(anchorEl);
   const isChatMenuOpen = Boolean(menuAnchorEl);
@@ -273,8 +277,8 @@ function ChatPage() {
       .then((data) => {
         if (data) {
           const newMessages = data.flatMap(convo => ([
-            { text: convo.user_query, sender: 'user' },
-            { text: convo.response, sender: 'bot' }
+            { text: convo.user_query, sender: 'user', id: convo.id },
+            { text: convo.response, sender: 'bot', id: convo.id }
           ]));
           setMessages(newMessages);
           setChatMessages((prevChatMessages) => ({
@@ -357,8 +361,7 @@ function ChatPage() {
       });
   };
 
-  //fix the feedback for different conversations,put the button under the response, regenerate the reponse if the feedback was negative
-  const handleThumbUp = () => {
+  const handleThumbUp = (conversationId) => {
     fetch(`${SERVER_URL}/chat/feedback`, {
       method: 'POST',
       headers: {
@@ -366,7 +369,7 @@ function ChatPage() {
         Authorization: `bearer ${userToken}`,
       },
       body: JSON.stringify({
-        conversation_id: activeChatId,
+        conversation_id: conversationId,
         feedback_type: 'positive'
       }),
     })
@@ -385,6 +388,21 @@ function ChatPage() {
   };
 
   const handleFeedbackSubmit = () => {
+    if (loading) {
+      return;
+    }
+    setLoadinFB(true);
+
+    // Find the original message
+    const originalMessage = messages.find(message => message.id === conversationId);
+    if (!originalMessage) {
+      alert("Original message not found");
+      setLoadinFB(false);
+      return;
+    }
+
+    setOrignalMessage(originalMessage)
+
     fetch(`${SERVER_URL}/chat/feedback`, {
       method: 'POST',
       headers: {
@@ -392,7 +410,7 @@ function ChatPage() {
         Authorization: `bearer ${userToken}`,
       },
       body: JSON.stringify({
-        conversation_id: activeChatId,
+        conversation_id: conversationId,
         feedback_type: 'negative',
         feedback_comment: feedbackComment,
       }),
@@ -404,17 +422,49 @@ function ChatPage() {
         return response.json();
       })
       .then(() => {
+        // Resend the original question with feedback comment
+        return fetch(`${SERVER_URL}/chat/ask`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `bearer ${userToken}`,
+          },
+          body: JSON.stringify({
+            question: `${originalMessage.text} (Feedback: ${feedbackComment})`,
+            chat_id: activeChatId,
+          }),
+        });
+      })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Resending question failed");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        const responseMessage = { text: data.response, sender: 'bot' };
+        setMessages((prevMessages) => [...prevMessages, responseMessage]);
         setSnackbarOpen(true);
         setIsFeedbackDialogOpen(false);
         setFeedbackComment('');
+        setLoadinFB(false);
+
+        // Scroll to bottom after receiving the new response
+        setTimeout(() => {
+          const chatContent = document.querySelector('.chat-content');
+          chatContent.scrollTop = chatContent.scrollHeight;
+        }, 100);
       })
       .catch((error) => {
         alert(error.message);
+        setLoadinFB(false);
       });
   };
 
+
   function logout() {
     setUserToken(null);
+    setUserName('')
     clearUserToken();
     clearUserName();
     clearUserEmail();
@@ -447,7 +497,7 @@ function ChatPage() {
           </Typography>
           <Box sx={{ flexGrow: 1 }} />
           <IconButton color="inherit" onClick={handleMenuOpen}>
-            <AccountCircleIcon />
+            <AccountCircleIcon /> {username}
           </IconButton>
           <Menu
             anchorEl={anchorEl}
@@ -562,12 +612,12 @@ function ChatPage() {
               <Typography>{message.text}</Typography>
             </Paper>
             {message.sender === 'bot' && (
-              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1 }}>
-                <IconButton color="primary" onClick={handleThumbUp}>
-                  <ThumbUpIcon className='feedback-Icon' />
+              <Box className='feedback-Icon' sx={{ display: 'flex', justifyContent: 'center', mt: 1 }}>
+                <IconButton color="primary" onClick={() => handleThumbUp(message.id)}>
+                  <ThumbUpIcon />
                 </IconButton>
-                <IconButton color="primary" onClick={() => setIsFeedbackDialogOpen(true)}>
-                  <ThumbDownIcon className='feedback-Icon' />
+                <IconButton color="primary" onClick={() => { setConversationId(message.id); setIsFeedbackDialogOpen(true); }}>
+                  <ThumbDownIcon />
                 </IconButton>
               </Box>
             )}
@@ -586,11 +636,17 @@ function ChatPage() {
               fullWidth
               value={feedbackComment}
               onChange={(e) => setFeedbackComment(e.target.value)}
+              disabled={loadingFB}
             />
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setIsFeedbackDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleFeedbackSubmit} color="primary">Submit</Button>
+            <Button onClick={() => setIsFeedbackDialogOpen(false)} disabled={loadingFB}>Cancel</Button>
+            <Button onClick={handleFeedbackSubmit} disabled={loadingFB} color="primary">Submit</Button>
+            {loadingFB && (
+              <div className='loading-indicator'>
+                <CircularProgress />
+              </div>
+            )}
           </DialogActions>
         </Dialog>
 

@@ -13,7 +13,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { clearUserEmail, clearUserName, clearUserToken, getUserName, getUserToken } from '../localStorage';
-
+import MapDisplay from '../componenets/MapDisplay';
 import './ChatPage.css';
 import { SERVER_URL } from '../App';
 
@@ -43,10 +43,11 @@ function ChatPage() {
   let [loading, setLoading] = useState(false);
   let [loadingFB, setLoadinFB] = useState(false)
   let [feedbackComment, setFeedbackComment] = useState('');
-  let [originalMessage, setOrignalMessage] = useState('');
   let [snackbarOpen, setSnackbarOpen] = useState(false);
   let [isFeedbackDialogOpen, setIsFeedbackDialogOpen] = useState(false);
+  let [feedbackStatus, setFeedbackStatus] = useState({});
   let [conversationId, setConversationId] = useState(null);
+
 
   const isMenuOpen = Boolean(anchorEl);
   const isChatMenuOpen = Boolean(menuAnchorEl);
@@ -88,6 +89,32 @@ function ChatPage() {
     setActiveChatId(chatId);
     getConversations(chatId);
   };
+
+  const renderMap = (response) => {
+    // Get the index of the colon ":"
+    const colonIndex = response.indexOf(':');
+    //split the response to have the text and the URL seperately 
+    const firstPart = response.substring(0, colonIndex + 1).trim();
+    const secondPart = response.substring(colonIndex + 1).trim();
+    const regex = /https:\/\/www\.google\.com\/maps\/search\/\?api=1&query=([-0-9.]+),([-0-9.]+)/;
+    const match = secondPart.match(regex);
+
+    if (match) {
+      const coordinates = `${match[1]},${match[2]}`;
+      const mapUrl = `https://www.google.com/maps/embed/v1/place?key=AIzaSyBOsYleFVmwemndez8SSX4shHDJ3Bhvtlo&q=${coordinates}`;
+      console.log('Generated map URL:', mapUrl); // Check the generated URL
+      return (
+        <div>
+          <p>{firstPart}</p>
+          <MapDisplay mapUrl={mapUrl} />
+        </div>
+      );
+    }
+
+    return null;
+  };
+
+
 
   const createChat = (title, initialMessage) => {
     fetch(`${SERVER_URL}/chat/chats`, {
@@ -381,6 +408,10 @@ function ChatPage() {
       })
       .then(() => {
         setSnackbarOpen(true);
+        setFeedbackStatus((prevStatus) => ({
+          ...prevStatus,
+          [conversationId]: 'positive',
+        }));
       })
       .catch((error) => {
         alert(error.message);
@@ -392,16 +423,6 @@ function ChatPage() {
       return;
     }
     setLoadinFB(true);
-
-    // Find the original message
-    const originalMessage = messages.find(message => message.id === conversationId);
-    if (!originalMessage) {
-      alert("Original message not found");
-      setLoadinFB(false);
-      return;
-    }
-
-    setOrignalMessage(originalMessage)
 
     fetch(`${SERVER_URL}/chat/feedback`, {
       method: 'POST',
@@ -421,33 +442,15 @@ function ChatPage() {
         }
         return response.json();
       })
-      .then(() => {
-        // Resend the original question with feedback comment
-        return fetch(`${SERVER_URL}/chat/ask`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `bearer ${userToken}`,
-          },
-          body: JSON.stringify({
-            question: `${originalMessage.text} (Feedback: ${feedbackComment})`,
-            chat_id: activeChatId,
-          }),
-        });
-      })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Resending question failed");
-        }
-        return response.json();
-      })
       .then((data) => {
-        const responseMessage = { text: data.response, sender: 'bot' };
-        setMessages((prevMessages) => [...prevMessages, responseMessage]);
         setSnackbarOpen(true);
         setIsFeedbackDialogOpen(false);
         setFeedbackComment('');
         setLoadinFB(false);
+        setFeedbackStatus((prevStatus) => ({
+          ...prevStatus,
+          [conversationId]: 'negative',
+        }));
 
         // Scroll to bottom after receiving the new response
         setTimeout(() => {
@@ -609,16 +612,27 @@ function ChatPage() {
             }}
           >
             <Paper className='messages-content' sx={{ padding: 2, backgroundColor: message.sender === 'user' ? '#bbdefb' : '#e3f2fd' }}>
-              <Typography>{message.text}</Typography>
+              {message.text.startsWith('Here is the map to') ? (
+                renderMap(message.text)
+              ) : (
+                <Typography>{message.text}</Typography>
+              )}
             </Paper>
             {message.sender === 'bot' && (
-              <Box className='feedback-Icon' sx={{ display: 'flex', justifyContent: 'center', mt: 1 }}>
-                <IconButton color="primary" onClick={() => handleThumbUp(message.id)}>
-                  <ThumbUpIcon />
+              <Box className='feedback-Icon' sx={{ display: 'block', mt: 1 }}>
+                <IconButton
+                  onClick={() => handleThumbUp(message.id)}
+                  disabled={feedbackStatus[message.id] !== undefined}
+                >
+                  <ThumbUpIcon color={feedbackStatus[message.id] === 'positive' ? 'primary' : 'inherit'} />
                 </IconButton>
-                <IconButton color="primary" onClick={() => { setConversationId(message.id); setIsFeedbackDialogOpen(true); }}>
-                  <ThumbDownIcon />
+                <IconButton
+                  onClick={() => { setConversationId(message.id); setIsFeedbackDialogOpen(true); }}
+                  disabled={feedbackStatus[message.id] !== undefined}
+                >
+                  <ThumbDownIcon color={feedbackStatus[message.id] === 'negative' ? 'primary' : 'inherit'} />
                 </IconButton>
+
               </Box>
             )}
           </Box>

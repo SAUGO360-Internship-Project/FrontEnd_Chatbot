@@ -130,7 +130,7 @@
 }
 .messages-content {
   width: auto; 
-  max-width: 400px;
+  max-width: 500px;
   display: flex;
   flex-direction: column;
   align-items: flex-start; 
@@ -146,3 +146,4 @@
   width: calc(70% - 40px);
  max-width: calc(100% - 40px);
 }
+

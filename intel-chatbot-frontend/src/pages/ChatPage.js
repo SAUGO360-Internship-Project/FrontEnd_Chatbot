@@ -100,14 +100,13 @@ function ChatPage() {
     const match = secondPart.match(regex);
 
     if (match) {
-      const coordinates = `${match[1]},${match[2]}`;
-      const mapUrl = `https://www.google.com/maps/embed/v1/place?key=AIzaSyBOsYleFVmwemndez8SSX4shHDJ3Bhvtlo&q=${coordinates}`;
-      console.log('Generated map URL:', mapUrl); // Check the generated URL
+      const lat = parseFloat(match[1]);
+      const lng = parseFloat(match[2]);
       return (
         <div>
           <p>{firstPart}</p>
-          <MapDisplay mapUrl={mapUrl} />
-        </div>
+          <MapDisplay lat={lat} lng={lng} />
+        </div> 
       );
     }
 

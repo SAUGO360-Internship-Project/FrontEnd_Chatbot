@@ -41,12 +41,14 @@ function ChatPage() {
   let [renameChatTitle, setRenameChatTitle] = useState('');
   let [chatMessages, setChatMessages] = useState({});
   let [loading, setLoading] = useState(false);
-  let [loadingFB, setLoadinFB] = useState(false)
+  let [loadingFB, setLoadingFB] = useState(false)
   let [feedbackComment, setFeedbackComment] = useState('');
   let [snackbarOpen, setSnackbarOpen] = useState(false);
   let [isFeedbackDialogOpen, setIsFeedbackDialogOpen] = useState(false);
-  let [feedbackStatus, setFeedbackStatus] = useState({});
+  let [feedbackStatus, setFeedbackStatus] = useState({})
   let [conversationId, setConversationId] = useState(null);
+  let [isUpdateFeedbackDialogOpen, setIsUpdateFeedbackDialogOpen] = useState(false);
+  let [updateFeedbackComment, setUpdateFeedbackComment] = useState('');
 
 
   const isMenuOpen = Boolean(anchorEl);
@@ -88,6 +90,7 @@ function ChatPage() {
   const handleChatClick = (chatId) => {
     setActiveChatId(chatId);
     getConversations(chatId);
+    getFeedback();
   };
 
   const renderMap = (response) => {
@@ -106,7 +109,7 @@ function ChatPage() {
         <div>
           <p>{firstPart}</p>
           <MapDisplay lat={lat} lng={lng} />
-        </div> 
+        </div>
       );
     }
 
@@ -146,7 +149,7 @@ function ChatPage() {
         }
       })
       .catch((error) => {
-        alert(error.error);
+        alert(error.message);
       });
   };
 
@@ -196,13 +199,19 @@ function ChatPage() {
       body: JSON.stringify({ question: message, chat_id: chatId }),
     })
       .then((response) => {
-        if (!response.ok) {
+        if (response.status === 201) {
+          console.log(response);
+        }
+        else if (response.status === 403) {
+          throw new Error("sensitive content, data altering or unrelevant answers are prohibited!")
+        }
+        else if (!response.ok) {
           throw new Error("Couldn't send a question, try again later");
         }
         return response.json();
       })
       .then((data) => {
-        const responseMessage = { text: data.response, sender: 'bot' };
+        const responseMessage = { text: data.message, sender: 'bot' };
         setMessages((prevMessages) => [...prevMessages, responseMessage]);
         setLoading(false);
         setChatMessages((prevChatMessages) => ({
@@ -217,8 +226,8 @@ function ChatPage() {
         }, 100);
       })
       .catch((error) => {
-        console.error('Error:', error);
         setLoading(false);
+        alert(error.message);
       });
   };
 
@@ -265,7 +274,7 @@ function ChatPage() {
       method: "GET",
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `bearer ${userToken}`,
+        Authorization: `bearer ${userToken}`,
       },
     })
       .then((response) => {
@@ -291,7 +300,7 @@ function ChatPage() {
       method: "GET",
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `bearer ${userToken}`,
+        Authorization: `bearer ${userToken}`,
       },
     })
       .then((response) => {
@@ -304,7 +313,7 @@ function ChatPage() {
         if (data) {
           const newMessages = data.flatMap(convo => ([
             { text: convo.user_query, sender: 'user', id: convo.id },
-            { text: convo.response, sender: 'bot', id: convo.id }
+            { text: convo.message, sender: 'bot', id: convo.id }
           ]));
           setMessages(newMessages);
           setChatMessages((prevChatMessages) => ({
@@ -314,7 +323,7 @@ function ChatPage() {
         }
       })
       .catch((error) => {
-        console.error('Error:', error);
+        alert(error.message);
       });
   }, [userToken]);
   useEffect(() => {
@@ -388,6 +397,10 @@ function ChatPage() {
   };
 
   const handleThumbUp = (conversationId) => {
+    if (feedbackStatus[conversationId] === 'positive') {
+      return;
+    }
+
     fetch(`${SERVER_URL}/chat/feedback`, {
       method: 'POST',
       headers: {
@@ -411,17 +424,28 @@ function ChatPage() {
           ...prevStatus,
           [conversationId]: 'positive',
         }));
+        getFeedback();
       })
       .catch((error) => {
         alert(error.message);
       });
   };
 
+  const handleThumbDown = (convID) => {
+    setConversationId(convID);
+    if (feedbackStatus[convID] === undefined) {
+      setIsFeedbackDialogOpen(true);
+    }
+    if (feedbackStatus[convID] === 'negative') {
+      setIsUpdateFeedbackDialogOpen(true);
+    }
+  }
   const handleFeedbackSubmit = () => {
+
     if (loading) {
       return;
     }
-    setLoadinFB(true);
+    setLoadingFB(true);
 
     fetch(`${SERVER_URL}/chat/feedback`, {
       method: 'POST',
@@ -445,7 +469,52 @@ function ChatPage() {
         setSnackbarOpen(true);
         setIsFeedbackDialogOpen(false);
         setFeedbackComment('');
-        setLoadinFB(false);
+        setLoadingFB(false);
+        setFeedbackStatus((prevStatus) => ({
+          ...prevStatus,
+          [conversationId]: 'negative',
+        }));
+
+        getFeedback();
+        // Scroll to bottom after receiving the new response
+        setTimeout(() => {
+          const chatContent = document.querySelector('.chat-content');
+          chatContent.scrollTop = chatContent.scrollHeight;
+        }, 100);
+      })
+      .catch((error) => {
+        alert(error.message);
+        setLoadingFB(false);
+      });
+  };
+
+  const handleUpdateFeedbackSubmit = () => {
+    if (loadingFB) {
+      return;
+    }
+    setLoadingFB(true);
+
+    fetch(`${SERVER_URL}/chat/conversations/${conversationId}/feedback`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `bearer ${userToken}`,
+      },
+      body: JSON.stringify({
+        feedback_comment: updateFeedbackComment,
+      }),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Updating feedback failed");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        setSnackbarOpen(true);
+        setIsUpdateFeedbackDialogOpen(false);
+        setUpdateFeedbackComment('');
+        setLoadingFB(false);
         setFeedbackStatus((prevStatus) => ({
           ...prevStatus,
           [conversationId]: 'negative',
@@ -459,10 +528,51 @@ function ChatPage() {
       })
       .catch((error) => {
         alert(error.message);
-        setLoadinFB(false);
+        setLoadingFB(false);
       });
   };
 
+  const getFeedback = useCallback(() => {
+    fetch(`${SERVER_URL}/chat/feedback`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `bearer ${userToken}`,
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Fetching Feedback failed");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        const conversationIDs = data.map(feedback => feedback.conversation_id)
+        conversationIDs.forEach(conversationId => {
+          const specificFeedback = data.find(feedback => feedback.conversation_id === conversationId);
+          console.log(specificFeedback);
+          if (specificFeedback) {
+            setFeedbackStatus((prevStatus) => ({
+              ...prevStatus,
+              [conversationId]: specificFeedback.feedback_type,
+            }));
+          }
+          if (specificFeedback.feedback_type === 'negative') {
+            setUpdateFeedbackComment(specificFeedback.feedback_comment);
+          }
+          return
+        });
+      })
+      .catch((error) => {
+        alert(error.message);
+        setLoadingFB(false);
+      });
+  }, [userToken]);
+  useEffect(() => {
+    if (userToken) {
+      getFeedback()
+    }
+  }, [getFeedback, userToken])
 
   function logout() {
     setUserToken(null);
@@ -470,6 +580,7 @@ function ChatPage() {
     clearUserToken();
     clearUserName();
     clearUserEmail();
+    setSuggestedQuestions('');
     navigate('App');
   }
 
@@ -626,8 +737,8 @@ function ChatPage() {
                   <ThumbUpIcon color={feedbackStatus[message.id] === 'positive' ? 'primary' : 'inherit'} />
                 </IconButton>
                 <IconButton
-                  onClick={() => { setConversationId(message.id); setIsFeedbackDialogOpen(true); }}
-                  disabled={feedbackStatus[message.id] !== undefined}
+                  onClick={() => handleThumbDown(message.id)}
+                  disabled={feedbackStatus[message.id] === 'positive'}
                 >
                   <ThumbDownIcon color={feedbackStatus[message.id] === 'negative' ? 'primary' : 'inherit'} />
                 </IconButton>
@@ -655,6 +766,33 @@ function ChatPage() {
           <DialogActions>
             <Button onClick={() => setIsFeedbackDialogOpen(false)} disabled={loadingFB}>Cancel</Button>
             <Button onClick={handleFeedbackSubmit} disabled={loadingFB} color="primary">Submit</Button>
+            {loadingFB && (
+              <div className='loading-indicator'>
+                <CircularProgress />
+              </div>
+            )}
+          </DialogActions>
+        </Dialog>
+
+        <Dialog
+          open={isUpdateFeedbackDialogOpen}
+          onClose={() => setIsUpdateFeedbackDialogOpen(false)}
+        >
+          <DialogTitle sx={{ width: '500px' }}>Update Your Feedback</DialogTitle>
+          <DialogContent>
+            <TextField
+              label="Comment (optional)"
+              multiline
+              rows={4}
+              fullWidth
+              value={updateFeedbackComment}
+              onChange={(e) => setUpdateFeedbackComment(e.target.value)}
+              disabled={loadingFB}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setIsUpdateFeedbackDialogOpen(false)} disabled={loadingFB}>Cancel</Button>
+            <Button onClick={handleUpdateFeedbackSubmit} disabled={loadingFB} color="primary">Submit</Button>
             {loadingFB && (
               <div className='loading-indicator'>
                 <CircularProgress />

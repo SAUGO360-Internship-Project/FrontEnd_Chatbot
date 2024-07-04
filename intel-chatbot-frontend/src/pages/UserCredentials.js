@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import './UserCredentials.css';
 import { useNavigate } from 'react-router-dom';
 import { getUserToken, saveUserToken, saveUserName, getUserName } from "../localStorage";
 import { SERVER_URL } from '../App';
+import AuthContext from '../AuthContext';
 
 export function validateEmail(email) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -38,6 +39,7 @@ function UserCredentials() {
     const [email, setEmail] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
 
+    const { setAuth } = useContext(AuthContext);
     const navigate = useNavigate();
 
     function login(username, password) {
@@ -63,6 +65,7 @@ function UserCredentials() {
             })
             .then((body) => {
                 saveUserName(trimmedUsername);
+                setAuth(body.token);
                 saveUserToken(body.token);
                 setUserToken(body.token);
                 navigate('/pages/ChatPage');

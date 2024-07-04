@@ -5,6 +5,8 @@ import './index.css';
 import App from './App';
 import ChatPage from './pages/ChatPage';
 import reportWebVitals from './reportWebVitals';
+import PrivateRoute from './PrivateRoute';
+import { AuthProvider } from './AuthContext';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 
 
@@ -13,13 +15,16 @@ const theme = createTheme(); // This creates the default theme
 root.render(
   <React.StrictMode>
     <ThemeProvider theme={theme}>
-      <Router>
-        <Routes>
-          <Route path="/pages/ChatPage" element={<ChatPage />} />
-          <Route path="*" element={<App />} />
-        </Routes>
-      </Router>
-    </ThemeProvider>,
+      <AuthProvider>
+        <Router>
+          <Routes>
+            <Route path="/login" element={<App />} />
+            <Route path="/pages/ChatPage" element={<PrivateRoute element={<ChatPage />} />} />
+            <Route path="*" element={<App />} />
+          </Routes>
+        </Router>
+      </AuthProvider>
+    </ThemeProvider>
 
   </React.StrictMode>
 );

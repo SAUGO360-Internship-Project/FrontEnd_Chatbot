@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useContext, Suspense } from 'react';
 import { Box, Menu, MenuItem, Snackbar, Drawer, List, ListItem, ListItemText, AppBar, Toolbar, Typography, Paper, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, CircularProgress } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -15,6 +15,8 @@ import { useNavigate } from 'react-router-dom';
 import { clearUserEmail, clearUserName, clearUserToken, getUserName, getUserToken } from '../localStorage';
 import MapDisplay from '../componenets/MapDisplay';
 import './ChatPage.css';
+import AuthContext from '../AuthContext';
+import DynamicComponentLoader from '../componenets/ChartComponents';
 import { SERVER_URL } from '../App';
 
 const drawerWidth = 240;
@@ -53,6 +55,7 @@ function ChatPage() {
 
   const isMenuOpen = Boolean(anchorEl);
   const isChatMenuOpen = Boolean(menuAnchorEl);
+  const { setAuth } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleMenuOpen = (event) => {
@@ -313,7 +316,7 @@ function ChatPage() {
         if (data) {
           const newMessages = data.flatMap(convo => ([
             { text: convo.user_query, sender: 'user', id: convo.id },
-            { text: convo.message, sender: 'bot', id: convo.id }
+            { text: convo.response, sender: 'bot', id: convo.id, chartname: convo.chartname }
           ]));
           setMessages(newMessages);
           setChatMessages((prevChatMessages) => ({
@@ -550,7 +553,6 @@ function ChatPage() {
         const conversationIDs = data.map(feedback => feedback.conversation_id)
         conversationIDs.forEach(conversationId => {
           const specificFeedback = data.find(feedback => feedback.conversation_id === conversationId);
-          console.log(specificFeedback);
           if (specificFeedback) {
             setFeedbackStatus((prevStatus) => ({
               ...prevStatus,
@@ -581,6 +583,7 @@ function ChatPage() {
     clearUserName();
     clearUserEmail();
     setSuggestedQuestions('');
+    setAuth(null);
     navigate('App');
   }
 
@@ -724,8 +727,10 @@ function ChatPage() {
             <Paper className='messages-content' sx={{ padding: 2, backgroundColor: message.sender === 'user' ? '#bbdefb' : '#e3f2fd' }}>
               {message.text.startsWith('Here is the map to') ? (
                 renderMap(message.text)
+              ) : message.chartname !== null &&message.text.startsWith('const exampleData') ? (
+              <DynamicComponentLoader codeString={message.text} />
               ) : (
-                <Typography>{message.text}</Typography>
+              <Typography>{message.text}</Typography>
               )}
             </Paper>
             {message.sender === 'bot' && (

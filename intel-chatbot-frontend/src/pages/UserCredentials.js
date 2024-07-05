@@ -39,10 +39,10 @@ function UserCredentials() {
     const [email, setEmail] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
 
-    const { setAuth } = useContext(AuthContext);
+    const {login, setAuth } = useContext(AuthContext);
     const navigate = useNavigate();
 
-    function login(username, password) {
+    function handleLogIn(username, password) {
         const trimmedUsername = username.trim();
         if (!trimmedUsername || !password) {
             alert("Please enter all required fields");
@@ -66,6 +66,7 @@ function UserCredentials() {
             .then((body) => {
                 saveUserName(trimmedUsername);
                 setAuth(body.token);
+                login(body.token);
                 saveUserToken(body.token);
                 setUserToken(body.token);
                 navigate('/pages/ChatPage');
@@ -129,7 +130,7 @@ function UserCredentials() {
                 setEmail("");
                 setPassword("");
                 setConfirmPassword("");
-                login(username, password);
+                handleLogIn(username, password);
                 navigate('/pages/ChatPage');
 
             })
@@ -179,7 +180,7 @@ function UserCredentials() {
                             <button type="submit">Submit</button>
                         </form>
                     ) : (
-                        <form className="login-form" onSubmit={(e) => { e.preventDefault(); login(userName, password) }}>
+                        <form className="login-form" onSubmit={(e) => { e.preventDefault(); handleLogIn(userName, password) }}>
                             <h2>Sign In</h2>
                             <input type="text" placeholder="Username" required onChange={(e) => setUserName(e.target.value)} />
                             <input type="password" placeholder="Password" required onChange={(e) => setPassword(e.target.value)} />

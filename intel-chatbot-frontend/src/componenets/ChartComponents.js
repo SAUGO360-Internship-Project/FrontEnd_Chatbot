@@ -37,12 +37,17 @@ const DynamicComponentLoader = ({ codeString }) => {
         console.error('Failed to create component:', error);
       }
     };
-    loadComponent();
+    loadComponent(); 
   }, [codeString]);
 
   if (!Component) return <div>Componenet can't be generated</div>;
 
-  return <Component />;
+  return (
+    <div className="dynamic-component-container">
+      <Component />
+    </div>
+  )
+
 };
 
 export default DynamicComponentLoader;

@@ -55,6 +55,21 @@
   margin-top: 60px;
 }
 
+.dynamic-component-container {
+  width: 100%!important;
+  height: 100% !important;
+  display: flex; 
+  justify-content: center;
+  align-items: center;
+}
+
+.dynamic-component-container > * {
+  width: 100% !important;
+  height: 100% !important; 
+}
+
+
+
 .chat-content.open {
   margin-left: 100px;
   /* Adjust margin when sidebar is open */
@@ -132,7 +147,7 @@
   line-height: 20px; 
 }
 .messages-content {
-  width: auto; 
+  width: 100%; 
   max-width: 500px;
   display: flex;
   flex-direction: column;

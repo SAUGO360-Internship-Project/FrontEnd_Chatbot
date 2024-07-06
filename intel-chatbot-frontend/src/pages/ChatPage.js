@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useContext, Suspense } from 'react';
+import React, { useState, useCallback, useEffect, useContext } from 'react';
 import { Box, Menu, MenuItem, Snackbar, Drawer, List, ListItem, ListItemText, AppBar, Toolbar, Typography, Paper, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, CircularProgress } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -13,10 +13,9 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { clearUserEmail, clearUserName, clearUserToken, getUserName, getUserToken } from '../localStorage';
-import MapDisplay from '../componenets/MapDisplay';
 import './ChatPage.css';
 import AuthContext from '../AuthContext';
-import DynamicComponentLoader from '../componenets/ChartComponents';
+import DynamicComponentLoader from '../componenets/DynamicComponentLoader';
 import { SERVER_URL } from '../App';
 
 const drawerWidth = 240;
@@ -95,30 +94,6 @@ function ChatPage() {
     getConversations(chatId);
     getFeedback();
   };
-
-  const renderMap = (response) => {
-    // Get the index of the colon ":"
-    const colonIndex = response.indexOf(':');
-    //split the response to have the text and the URL seperately 
-    const firstPart = response.substring(0, colonIndex + 1).trim();
-    const secondPart = response.substring(colonIndex + 1).trim();
-    const regex = /https:\/\/www\.google\.com\/maps\/search\/\?api=1&query=([-0-9.]+),([-0-9.]+)/;
-    const match = secondPart.match(regex);
-
-    if (match) {
-      const lat = parseFloat(match[1]);
-      const lng = parseFloat(match[2]);
-      return (
-        <div>
-          <p>{firstPart}</p>
-          <MapDisplay lat={lat} lng={lng} />
-        </div>
-      );
-    }
-
-    return null;
-  };
-
 
 
   const createChat = (title, initialMessage) => {
@@ -315,9 +290,10 @@ function ChatPage() {
       .then((data) => {
         if (data) {
           const newMessages = data.flatMap(convo => ([
-            { text: convo.user_query, sender: 'user', id: convo.id },
-            { text: convo.response, sender: 'bot', id: convo.id, chartname: convo.chartname }
+            { text: convo.user_query, sender: 'user', id: convo.id, chartname: convo.chartname, location: convo.location },
+            { text: convo.response, sender: 'bot', id: convo.id, chartname: convo.chartname, location: convo.location }
           ]));
+          console.log(newMessages);
           setMessages(newMessages);
           setChatMessages((prevChatMessages) => ({
             ...prevChatMessages,
@@ -725,12 +701,10 @@ function ChatPage() {
             }}
           >
             <Paper className='messages-content' sx={{ padding: 2, backgroundColor: message.sender === 'user' ? '#bbdefb' : '#e3f2fd' }}>
-              {message.text.startsWith('Here is the map to') ? (
-                renderMap(message.text)
-              ) : message.chartname !== null &&message.text.startsWith('const exampleData') ? (
-              <DynamicComponentLoader codeString={message.text} />
+              {message.sender !== 'user' && (message.chartname !== null || message.location === "Yes") ? (
+                <DynamicComponentLoader codeString={message.text} />
               ) : (
-              <Typography>{message.text}</Typography>
+                <Typography>{message.text}</Typography>
               )}
             </Paper>
             {message.sender === 'bot' && (
@@ -762,7 +736,7 @@ function ChatPage() {
               label="Comment (optional)"
               multiline
               rows={4}
-              fullWidth
+              fullwidth
               value={feedbackComment}
               onChange={(e) => setFeedbackComment(e.target.value)}
               disabled={loadingFB}
@@ -789,7 +763,7 @@ function ChatPage() {
               label="Comment (optional)"
               multiline
               rows={4}
-              fullWidth
+              fullwidth
               value={updateFeedbackComment}
               onChange={(e) => setUpdateFeedbackComment(e.target.value)}
               disabled={loadingFB}
@@ -813,7 +787,7 @@ function ChatPage() {
         <textarea className='chat-input'
           variant="outlined"
           placeholder="Type a message..."
-          fullWidth
+          fullwidth
           rows={1}
           value={inputValue}
           onChange={handleInputChange}
@@ -860,7 +834,7 @@ function ChatPage() {
             margin="dense"
             label="Chat Title"
             type="text"
-            fullWidth
+            fullwidth
             value={renameChatTitle}
             onChange={(e) => setRenameChatTitle(e.target.value)}
           />

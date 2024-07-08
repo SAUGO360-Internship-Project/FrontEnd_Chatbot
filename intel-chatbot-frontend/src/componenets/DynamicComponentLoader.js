@@ -50,7 +50,7 @@ const DynamicComponentLoader = ({ codeString }) => {
     };
 
     loadComponent();
-  }, [secondPart]);
+  }, [secondPart]); 
 
   if (error) return <div>Failed to load component: {error.message}</div>;
   if (!Component) return <div>Loading component...</div>;
@@ -58,7 +58,7 @@ const DynamicComponentLoader = ({ codeString }) => {
   return (
     <div>
       <p>{firstPart}</p>
-      <div className="dynamic-component-container">
+      <div className='dynamic-component-container' style={{ height: 'auto', width: '700px', maxWidth: '800px', margin: '2'}}>
         <Component />
       </div>
     </div>

@@ -15,6 +15,7 @@ import { useNavigate } from 'react-router-dom';
 import { clearUserEmail, clearUserName, clearUserToken, getUserName, getUserToken } from '../localStorage';
 import './ChatPage.css';
 import AuthContext from '../AuthContext';
+import DOMPurify from 'dompurify';
 import DynamicComponentLoader from '../componenets/DynamicComponentLoader';
 import { SERVER_URL } from '../App';
 
@@ -95,6 +96,48 @@ function ChatPage() {
     getFeedback();
   };
 
+  const renderMessages = (message) => {
+    if (message.sender !== 'user') {
+      if (message.text.startsWith('<table border')) {
+        const sanitizedHtml = DOMPurify.sanitize(message.text);
+        console.log(sanitizedHtml);
+        // Case 1: Render the table if the message contains a table
+        return (
+          <Paper className='messages-content' sx={{ padding: 2, backgroundColor: message.sender === 'user' ? '#bbdefb' : '#e3f2fd' }}>
+            <Box dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />
+          </Paper>
+        );
+      } else if (message.chartname !== 'None' && message.text.startsWith(`This is your ${message.chartname}`)) {
+        // Case 2: Render the chart if chartname is not "None" and there's no table
+        return (
+          <Paper className='messages-content' sx={{ padding: 2, backgroundColor: message.sender === 'user' ? '#bbdefb' : '#e3f2fd' }}>
+            <DynamicComponentLoader codeString={message.text} />
+          </Paper>
+        );
+      } else if (message.location === 'Yes' && message.text.startsWith("Here is the map to")) {
+        // Case 3: Render the map if location is "Yes" and there's no table or chart
+        return (
+          <Paper className='messages-content' sx={{ padding: 2, backgroundColor: message.sender === 'user' ? '#bbdefb' : '#e3f2fd' }}>
+            <DynamicComponentLoader codeString={message.text} />
+          </Paper>
+        );
+      } else {
+        // Case 4: Render the text if none of the above conditions are met
+        return (
+          <Paper className='messages-content' sx={{ padding: 2, backgroundColor: message.sender === 'user' ? '#bbdefb' : '#e3f2fd' }}>
+            <Typography>{message.text}</Typography>
+          </Paper>
+        );
+      }
+    } else {
+      return (
+        <Paper className='messages-content' sx={{ padding: 2, backgroundColor: message.sender === 'user' ? '#bbdefb' : '#e3f2fd' }}>
+          <Typography>{message.text}</Typography>
+        </Paper>
+      );
+
+    }
+  };
 
   const createChat = (title, initialMessage) => {
     fetch(`${SERVER_URL}/chat/chats`, {
@@ -700,13 +743,7 @@ function ChatPage() {
               maxWidth: '800px',
             }}
           >
-            <Paper className='messages-content' sx={{ padding: 2, backgroundColor: message.sender === 'user' ? '#bbdefb' : '#e3f2fd' }}>
-              {message.sender !== 'user' && (message.chartname !== null || message.location === "Yes") ? (
-                <DynamicComponentLoader codeString={message.text} />
-              ) : (
-                <Typography>{message.text}</Typography>
-              )}
-            </Paper>
+            {renderMessages(message)}
             {message.sender === 'bot' && (
               <Box className='feedback-Icon' sx={{ display: 'block', mt: 1 }}>
                 <IconButton

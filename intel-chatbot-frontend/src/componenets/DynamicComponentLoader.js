@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Pie, Bar, Line } from 'react-chartjs-2';
 import { Chart as ChartJS } from 'chart.js/auto';
 import * as Babel from '@babel/standalone';
+import HeatMapGrid from 'react-heatmap-grid';
+
 
 const DynamicComponentLoader = ({ codeString }) => {
   const [Component, setComponent] = useState(null);
@@ -35,12 +37,13 @@ const DynamicComponentLoader = ({ codeString }) => {
           'Pie',
           'Bar',
           'Line',
+          'HeatMapGrid',
           'ChartJS',
           `${transformedCode}; return (typeof ChartTest !== 'undefined' ? ChartTest : MapDisplay);`
         );
 
         // Invoke the function with the required dependencies
-        const Component = createComponent(React, useState, useEffect, useRef, Pie, Bar, Line, ChartJS);
+        const Component = createComponent(React, useState, useEffect, useRef, Pie, Bar, Line, ChartJS, HeatMapGrid);
 
         setComponent(() => Component);
       } catch (error) {
@@ -50,7 +53,7 @@ const DynamicComponentLoader = ({ codeString }) => {
     };
 
     loadComponent();
-  }, [secondPart]); 
+  }, [secondPart]);
 
   if (error) return <div>Failed to load component: {error.message}</div>;
   if (!Component) return <div>Loading component...</div>;
@@ -58,7 +61,7 @@ const DynamicComponentLoader = ({ codeString }) => {
   return (
     <div>
       <p>{firstPart}</p>
-      <div className='dynamic-component-container' style={{ height: 'auto', width: '700px', maxWidth: '800px', margin: '2'}}>
+      <div className='dynamic-component-container' style={{ height: 'auto', width: '700px', maxWidth: '800px', margin: '2' }}>
         <Component />
       </div>
     </div>

@@ -27,10 +27,10 @@ function ChatPage() {
   let [userToken, setUserToken] = useState(getUserToken());
   let [username, setUserName] = useState(getUserName())
   let [suggestedQuestions, setSuggestedQuestions] = useState([
-    'How many customers are called Emily',
-    'What is the purchase history of Robert Smith',
-    'How much milk did Linda Garcia buy',
-    'What is the age of Alex Jones'
+    'What are the top-rated restaurants?',
+    'Generate a pie chart of the number of consumers in each city?',
+    'Generate a bar chart comparing the ratings of restaurants?',
+    'can you give me the location of cafe ambar?'
   ]);
   let [inputValue, setInputValue] = useState('');
   let [chats, setChats] = useState([]);
@@ -43,11 +43,11 @@ function ChatPage() {
   let [renameChatTitle, setRenameChatTitle] = useState('');
   let [chatMessages, setChatMessages] = useState({});
   let [loading, setLoading] = useState(false);
-  let [loadingFB, setLoadingFB] = useState(false)
+  let [loadingFB, setLoadingFB] = useState(false);
   let [feedbackComment, setFeedbackComment] = useState('');
   let [snackbarOpen, setSnackbarOpen] = useState(false);
   let [isFeedbackDialogOpen, setIsFeedbackDialogOpen] = useState(false);
-  let [feedbackStatus, setFeedbackStatus] = useState({})
+  let [feedbackStatus, setFeedbackStatus] = useState({});
   let [conversationId, setConversationId] = useState(null);
   let [isUpdateFeedbackDialogOpen, setIsUpdateFeedbackDialogOpen] = useState(false);
   let [updateFeedbackComment, setUpdateFeedbackComment] = useState('');
@@ -87,7 +87,6 @@ function ChatPage() {
 
   const handleSuggestedQuestionClick = (question) => {
     handleSendMessage(question);
-    console.log(chats);
   };
 
   const handleChatClick = (chatId) => {
@@ -100,21 +99,20 @@ function ChatPage() {
     if (message.sender !== 'user') {
       if (message.text.startsWith('<table border')) {
         const sanitizedHtml = DOMPurify.sanitize(message.text);
-        console.log(sanitizedHtml);
         // Case 1: Render the table if the message contains a table
         return (
           <Paper className='messages-content' sx={{ padding: 2, backgroundColor: message.sender === 'user' ? '#bbdefb' : '#e3f2fd' }}>
             <Box dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />
           </Paper>
         );
-      } else if (message.chartname !== 'None' && message.text.startsWith(`This is your ${message.chartname}`)) {
+      } else if (message.chartname !== 'None' && (message.text.startsWith(`Here is your ${message.chartname}`) || message.text.startsWith("Here is your heatmap"))) {
         // Case 2: Render the chart if chartname is not "None" and there's no table
         return (
           <Paper className='messages-content' sx={{ padding: 2, backgroundColor: message.sender === 'user' ? '#bbdefb' : '#e3f2fd' }}>
             <DynamicComponentLoader codeString={message.text} />
           </Paper>
         );
-      } else if (message.location === 'Yes' && message.text.startsWith("Here is the map to")) {
+      } else if (message.location === 'Yes' && (message.text.startsWith("Here is the map to") || message.text.startsWith("Here is your requested area"))) {
         // Case 3: Render the map if location is "Yes" and there's no table or chart
         return (
           <Paper className='messages-content' sx={{ padding: 2, backgroundColor: message.sender === 'user' ? '#bbdefb' : '#e3f2fd' }}>
@@ -336,7 +334,6 @@ function ChatPage() {
             { text: convo.user_query, sender: 'user', id: convo.id, chartname: convo.chartname, location: convo.location },
             { text: convo.response, sender: 'bot', id: convo.id, chartname: convo.chartname, location: convo.location }
           ]));
-          console.log(newMessages);
           setMessages(newMessages);
           setChatMessages((prevChatMessages) => ({
             ...prevChatMessages,
@@ -353,8 +350,6 @@ function ChatPage() {
       getChats();
     }
   }, [getChats, userToken]);
-
-
 
   const handleRenameChat = () => {
     if (!renameChatTitle.trim()) {
@@ -563,13 +558,22 @@ function ChatPage() {
       },
     })
       .then((response) => {
-        if (!response.ok) {
+        if (response.status === 404) {
+          setLoading(false);
+          return
+        }
+        else if (!response.ok) {
           throw new Error("Fetching Feedback failed");
         }
         return response.json();
       })
       .then((data) => {
-        const conversationIDs = data.map(feedback => feedback.conversation_id)
+        if (!data || data.length === 0) {
+          setLoadingFB(false);
+          return;
+        }
+
+        const conversationIDs = data.map(feedback => feedback.conversation_id);
         conversationIDs.forEach(conversationId => {
           const specificFeedback = data.find(feedback => feedback.conversation_id === conversationId);
           if (specificFeedback) {
@@ -577,23 +581,26 @@ function ChatPage() {
               ...prevStatus,
               [conversationId]: specificFeedback.feedback_type,
             }));
+
+            if (specificFeedback.feedback_type === 'negative') {
+              setUpdateFeedbackComment(specificFeedback.feedback_comment);
+            }
           }
-          if (specificFeedback.feedback_type === 'negative') {
-            setUpdateFeedbackComment(specificFeedback.feedback_comment);
-          }
-          return
         });
+        setLoadingFB(false);
       })
       .catch((error) => {
         alert(error.message);
         setLoadingFB(false);
       });
   }, [userToken]);
+
   useEffect(() => {
     if (userToken) {
-      getFeedback()
+      getFeedback();
     }
-  }, [getFeedback, userToken])
+  }, [getFeedback, userToken]);
+
 
   function logout() {
     setUserToken(null);

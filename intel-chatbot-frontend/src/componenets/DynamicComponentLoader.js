@@ -39,11 +39,14 @@ const DynamicComponentLoader = ({ codeString }) => {
           'Line',
           'HeatMapGrid',
           'ChartJS',
-          `${transformedCode}; return (typeof ChartTest !== 'undefined' ? ChartTest : MapDisplay);`
+          `${transformedCode};
+          return (typeof ChartTest !== 'undefined' ? ChartTest : 
+                  (typeof MapDisplay !== 'undefined' ? MapDisplay : 
+                  (typeof HeatMap !== 'undefined' ? HeatMap : null)));`
         );
 
         // Invoke the function with the required dependencies
-        const Component = createComponent(React, useState, useEffect, useRef, Pie, Bar, Line, ChartJS, HeatMapGrid);
+        const Component = createComponent(React, useState, useEffect, useRef, Pie, Bar, Line, HeatMapGrid, ChartJS);
 
         setComponent(() => Component);
       } catch (error) {

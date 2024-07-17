@@ -16,7 +16,8 @@ import { clearUserEmail, clearUserName, clearUserToken, getUserName, getUserToke
 import './ChatPage.css';
 import AuthContext from '../AuthContext';
 import DOMPurify from 'dompurify';
-import DynamicComponentLoader from '../componenets/DynamicComponentLoader';
+import DynamicComponentLoader from '../components/DynamicComponentLoader';
+import PdfUploadComponent from '../components/PdfComponent';
 import { SERVER_URL } from '../App';
 
 const drawerWidth = 240;
@@ -166,6 +167,8 @@ function ChatPage() {
             sendMessageToChat(initialMessage, data.id);
           }
         }
+        setActiveChatId(data.id);
+        getConversations(data.id);
       })
       .catch((error) => {
         alert(error.message);
@@ -237,6 +240,7 @@ function ChatPage() {
           ...prevChatMessages,
           [chatId]: true,
         }));
+        getConversations(chatId)
 
         // Scroll to bottom after receiving a response
         setTimeout(() => {
@@ -599,8 +603,7 @@ function ChatPage() {
     if (userToken) {
       getFeedback();
     }
-  }, [getFeedback, userToken]);
-
+  }, [getFeedback, userToken]);  
 
   function logout() {
     setUserToken(null);
@@ -637,6 +640,7 @@ function ChatPage() {
           <Typography variant="h6" noWrap>
             Intel Chatbot
           </Typography>
+          <PdfUploadComponent />
           <Box sx={{ flexGrow: 1 }} />
           <IconButton color="inherit" onClick={handleMenuOpen}>
             <AccountCircleIcon /> {username}

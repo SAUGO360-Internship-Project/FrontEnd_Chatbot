@@ -97,6 +97,7 @@ function ChatPage() {
   };
 
   const renderMessages = (message) => {
+    let processedText = message.text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
     if (message.sender !== 'user') {
       if (message.text.startsWith('<table border')) {
         const sanitizedHtml = DOMPurify.sanitize(message.text);
@@ -124,14 +125,14 @@ function ChatPage() {
         // Case 4: Render the text if none of the above conditions are met
         return (
           <Paper className='messages-content' sx={{ padding: 2, backgroundColor: message.sender === 'user' ? '#bbdefb' : '#e3f2fd' }}>
-            <Typography>{message.text}</Typography>
+            <Typography dangerouslySetInnerHTML={{ __html: processedText }} />
           </Paper>
         );
       }
     } else {
       return (
         <Paper className='messages-content' sx={{ padding: 2, backgroundColor: message.sender === 'user' ? '#bbdefb' : '#e3f2fd' }}>
-          <Typography>{message.text}</Typography>
+          <Typography dangerouslySetInnerHTML={{ __html: processedText }} />
         </Paper>
       );
 
@@ -497,11 +498,6 @@ function ChatPage() {
         }));
 
         getFeedback();
-        // Scroll to bottom after receiving the new response
-        setTimeout(() => {
-          const chatContent = document.querySelector('.chat-content');
-          chatContent.scrollTop = chatContent.scrollHeight;
-        }, 100);
       })
       .catch((error) => {
         alert(error.message);
@@ -540,12 +536,6 @@ function ChatPage() {
           ...prevStatus,
           [conversationId]: 'negative',
         }));
-
-        // Scroll to bottom after receiving the new response
-        setTimeout(() => {
-          const chatContent = document.querySelector('.chat-content');
-          chatContent.scrollTop = chatContent.scrollHeight;
-        }, 100);
       })
       .catch((error) => {
         alert(error.message);
@@ -603,7 +593,7 @@ function ChatPage() {
     if (userToken) {
       getFeedback();
     }
-  }, [getFeedback, userToken]);  
+  }, [getFeedback, userToken]);
 
   function logout() {
     setUserToken(null);
@@ -778,7 +768,7 @@ function ChatPage() {
           open={isFeedbackDialogOpen}
           onClose={() => setIsFeedbackDialogOpen(false)}
         >
-          <DialogTitle sx={{ width: '500px' }}>Provide Feedback</DialogTitle>
+          <DialogTitle >Provide Feedback</DialogTitle>
           <DialogContent>
             <TextField
               label="Comment (optional)"
@@ -805,7 +795,7 @@ function ChatPage() {
           open={isUpdateFeedbackDialogOpen}
           onClose={() => setIsUpdateFeedbackDialogOpen(false)}
         >
-          <DialogTitle sx={{ width: '500px' }}>Update Your Feedback</DialogTitle>
+          <DialogTitle >Update Your Feedback</DialogTitle>
           <DialogContent>
             <TextField
               label="Comment (optional)"

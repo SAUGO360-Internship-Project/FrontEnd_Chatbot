@@ -85,7 +85,6 @@ const PdfUploadComponent = () => {
         const saved = data.pdfs.map((name) => ({
           id: uuidv4(),
           name,
-          previewUrl: `${SERVER_URL}/uploads/${name}`,
           saved: true,
         }));
         setPdfs(saved);
@@ -128,9 +127,9 @@ const PdfUploadComponent = () => {
         setPdfs((prevPdfs) =>
           prevPdfs.map((pdf) => ({ ...pdf, saved: true }))
         );
-        setAnchorEl(null); // Close the menu after successful upload
-        setUnsavedPdf(false); // Reset unsavedPdf state
-        viewPDFs(); // Refresh saved PDFs
+        setAnchorEl(null); 
+        setUnsavedPdf(false); 
+        viewPDFs(); 
       })
       .catch((error) => {
         alert(error.message);

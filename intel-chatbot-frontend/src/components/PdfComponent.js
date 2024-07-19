@@ -30,8 +30,8 @@ const PdfUploadComponent = () => {
       const newPdf = {
         id: uuidv4(),
         file,
-        name: file.name,
-        previewUrl: URL.createObjectURL(file),
+        title: file.name,
+        url: URL.createObjectURL(file),
         saved: false,
       };
       setPdfs((prevPdfs) => [...prevPdfs, newPdf]);
@@ -42,7 +42,7 @@ const PdfUploadComponent = () => {
   const handleRemovePdf = (pdf) => {
     if (pdf.saved) {
       // Remove from server
-      fetch(`${SERVER_URL}/chat/delete_pdf/${pdf.name}`, {
+      fetch(`${SERVER_URL}/chat/delete_pdf/${pdf.title}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -82,9 +82,10 @@ const PdfUploadComponent = () => {
         return response.json();
       })
       .then((data) => {
-        const saved = data.pdfs.map((name) => ({
+        const saved = data.pdfs.map((pdf) => ({
           id: uuidv4(),
-          name,
+          title: pdf.title,
+          url: `${SERVER_URL}/chat/view_pdf/${pdf.title}?token=${userToken}`,
           saved: true,
         }));
         setPdfs(saved);
@@ -170,19 +171,17 @@ const PdfUploadComponent = () => {
         <List>
           {pdfs.map((pdf) => (
             <ListItem key={pdf.id} style={{ color: pdf.saved ? 'black' : 'blue' }}>
-              <ListItemText primary={pdf.name} style={{marginRight: 20}} />
+              <ListItemText primary={pdf.title} style={{marginRight: 20}} />
               <ListItemSecondaryAction style={{flexGrow:1}}> 
-                {!pdf.saved && (
-                  <IconButton
-                    edge="end"
-                    component="a"
-                    href={pdf.previewUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <VisibilityIcon />
-                  </IconButton>
-                )}
+                <IconButton
+                  edge="end"
+                  component="a"
+                  href={pdf.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <VisibilityIcon />
+                </IconButton>
                 <IconButton edge="end" style={{marginLeft: 4}} onClick={() => handleRemovePdf(pdf)}>
                   <DeleteIcon />
                 </IconButton>

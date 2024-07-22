@@ -8,6 +8,8 @@ import reportWebVitals from './reportWebVitals';
 import PrivateRoute from './PrivateRoute';
 import { AuthProvider } from './AuthContext';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
+import ForgotPassword from './components/ForgotPassword';
+import LostQRCode from './components/LostQrcode';
 
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
@@ -20,6 +22,8 @@ root.render(
           <Routes>
             <Route path="/login" element={<App />} />
             <Route path="/pages/ChatPage" element={<PrivateRoute element={<ChatPage />} />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/lost-qrcode" element={<LostQRCode />} />
             <Route path="*" element={<App />} />
           </Routes>
         </Router>

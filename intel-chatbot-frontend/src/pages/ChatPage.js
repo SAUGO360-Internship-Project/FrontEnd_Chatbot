@@ -640,6 +640,7 @@ function ChatPage() {
             open={isMenuOpen}
             onClose={handleMenuClose}
           >
+            <MenuItem onClick={()=> navigate('/pages/ProfilePage')}>Profile</MenuItem>
             <MenuItem onClick={() => { handleMenuClose(); logout(); }}>Logout</MenuItem>
           </Menu>
         </Toolbar>

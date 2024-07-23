@@ -1,0 +1,30 @@
+
+.profile-content {
+    justify-content: center;
+    align-items: flex-start;
+    gap: 20px; 
+}
+
+
+.profile-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-left: 2px solid #ddd; /* Vertical line separator */
+    padding-left: 20px;
+    flex: 1;
+}
+
+.profile-edit-buttons {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.profile-edit-buttons .MuiButton-root {
+    margin-bottom: 10px;
+}
+
+.profile-details-section > .MuiTypography-root {
+    margin-bottom: 15px; /* Increased space between fields */
+}

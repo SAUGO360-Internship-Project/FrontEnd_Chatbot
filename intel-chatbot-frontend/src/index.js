@@ -10,6 +10,7 @@ import { AuthProvider } from './AuthContext';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import ForgotPassword from './components/ForgotPassword';
 import LostQRCode from './components/LostQrcode';
+import ProfilePage from './pages/ProfilePage';
 
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
@@ -23,6 +24,7 @@ root.render(
             <Route path="/login" element={<App />} />
             <Route path="/pages/ChatPage" element={<PrivateRoute element={<ChatPage />} />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/pages/ProfilePage" element={<ProfilePage />} /> 
             <Route path="/lost-qrcode" element={<LostQRCode />} />
             <Route path="*" element={<App />} />
           </Routes>

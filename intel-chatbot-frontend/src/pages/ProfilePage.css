@@ -1,8 +1,42 @@
+/* ProfilePage.css */
+
+.profile-page-container {
+    padding: 10px;
+    margin: 20px;
+    border-radius: 10px;
+    background-color: #B5C18E;
+
+}
+
+.profile-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+body::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: no-repeat center center fixed;
+    opacity: 0.1;
+    z-index: -1;
+}
+
+.profile-container {
+    width: 80%;
+    margin: 0 auto;
+    background-color: rgb(255, 255, 255);
+    border-radius: 20px;
+    margin-top: 30px;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
 
 .profile-content {
     justify-content: center;
     align-items: flex-start;
-    gap: 20px; 
+    gap: 20px;
 }
 
 
@@ -10,21 +44,71 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    border-left: 2px solid #ddd; /* Vertical line separator */
+    border-left: 2px solid #ddd;
     padding-left: 20px;
     flex: 1;
 }
 
 .profile-edit-buttons {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: flex-end;
+    margin-top: auto;
+    gap: 10px;
+    margin-left: 10%;
 }
+
+.privacy-edit-buttons {
+    display: flex;
+    flex-direction: row;
+    margin-top: auto;
+    gap: 10px;
+}
+
+.privacy-edit-buttons .MuiButton-root {
+    margin-bottom: 10px;
+    transition: transform 0.3s, background-color 0.3s;
+}
+
 
 .profile-edit-buttons .MuiButton-root {
     margin-bottom: 10px;
+    transition: transform 0.3s, background-color 0.3s;
 }
 
-.profile-details-section > .MuiTypography-root {
-    margin-bottom: 15px; /* Increased space between fields */
+
+
+.profile-details-section>.MuiTypography-root {
+    margin-bottom: 15px;
+}
+
+#profile-image-upload+.MuiAvatar-root {
+    height: 200px;
+    width: 200px;
+    margin-bottom: 10px;
+    margin-top: 20px;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s;
+}
+
+#profile-image-upload+.MuiAvatar-root:hover {
+    transform: translateY(-5px);
+}
+
+.profile-privacy {
+    width: 80%;
+    margin: 0 auto;
+    background-color: rgb(255, 255, 255);
+    border-radius: 20px;
+    margin-top: 30px;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+
+}
+
+.password-change-section {
+    border-bottom: 2px solid #ddd;
+    margin-bottom: 20px;
+
 }

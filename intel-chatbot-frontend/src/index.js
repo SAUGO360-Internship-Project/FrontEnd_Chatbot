@@ -11,10 +11,10 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import ForgotPassword from './components/ForgotPassword';
 import LostQRCode from './components/LostQrcode';
 import ProfilePage from './pages/ProfilePage';
+import theme from './theme'
 
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
-const theme = createTheme(); // This creates the default theme
 root.render(
   <React.StrictMode>
     <ThemeProvider theme={theme}>

@@ -108,8 +108,8 @@ function LostQRCode() {
                             required
                             onChange={(e) => setPassword(e.target.value)}
                         />
-                        <button style={{ marginRight: 10 }} onClick={() => navigate('/login')} >Cancel</button>
-                        <button type="submit">Send Reset Code</button>
+                        <button style={{ marginRight: 10, backgroundColor:'#DEAC80' }} onClick={() => navigate('/login')} >Cancel</button>
+                        <button style= {{backgroundColor:'#DEAC80'}} type="submit">Send Code</button>
                     </form>
                 ) : (
                     <form onSubmit={handleResetQRCode}>
@@ -120,7 +120,7 @@ function LostQRCode() {
                             required
                             onChange={(e) => setResetCode(e.target.value)}
                         />
-                        <button type="submit">Reset QR Code</button>
+                        <button style= {{backgroundColor:'#DEAC80'}} type="submit">Reset QR Code</button>
                     </form>
                 )}
                 {qrCodeUrl && (
@@ -128,7 +128,7 @@ function LostQRCode() {
                         <h2>Your New QR Code</h2>
                         <QRCode value={qrCodeUrl} />
                         <div>
-                            <button onClick={() => handleDone()}>Done</button>
+                            <button style= {{backgroundColor:'#DEAC80'}} onClick={() => handleDone()}>Done</button>
                         </div>
                     </div>
                 )}

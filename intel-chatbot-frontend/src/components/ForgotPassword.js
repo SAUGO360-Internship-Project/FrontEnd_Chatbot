@@ -92,8 +92,8 @@ function ForgotPassword() {
                             value={userName}
                             onChange={(e) => setUserName(e.target.value)}
                         />
-                        <button style={{marginRight: 10}} onClick={()=> navigate('/login')} >Cancel</button>
-                        <button type="submit">Send Reset Code</button>
+                        <button style={{ marginRight: 10, backgroundColor: '#DEAC80' }} onClick={() => navigate('/login')} >Cancel</button>
+                        <button style={{ backgroundColor: '#DEAC80' }} type="submit">Send Reset Code</button>
                     </form>
                 ) : (
                     <form onSubmit={handleResetPassword}>
@@ -120,7 +120,7 @@ function ForgotPassword() {
                             value={confirmNewPassword}
                             onChange={(e) => setConfirmNewPassword(e.target.value)}
                         />
-                        <button type="submit">Reset Password</button>
+                        <button style={{ backgroundColor: '#DEAC80' }} type="submit">Reset Password</button>
                     </form>
                 )}
                 <Snackbar

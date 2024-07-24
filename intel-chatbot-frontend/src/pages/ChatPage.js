@@ -103,35 +103,35 @@ function ChatPage() {
         const sanitizedHtml = DOMPurify.sanitize(message.text);
         // Case 1: Render the table if the message contains a table
         return (
-          <Paper className='messages-content' sx={{ padding: 2, backgroundColor: message.sender === 'user' ? '#bbdefb' : '#e3f2fd' }}>
+          <Paper className='messages-content' sx={{ padding: 2, backgroundColor: message.sender === 'user' ? '#F7DCB9' : '#FEFAF6' }}>
             <Box dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />
           </Paper>
         );
       } else if (message.chartname !== 'None' && (message.text.startsWith(`Here is your ${message.chartname}`) || message.text.startsWith("Here is your heatmap"))) {
         // Case 2: Render the chart if chartname is not "None" and there's no table
         return (
-          <Paper className='messages-content' sx={{ padding: 2, backgroundColor: message.sender === 'user' ? '#bbdefb' : '#e3f2fd' }}>
+          <Paper className='messages-content' sx={{ padding: 2, backgroundColor: message.sender === 'user' ? '#F7DCB9' : '#FEFAF6' }}>
             <DynamicComponentLoader codeString={message.text} />
           </Paper>
         );
       } else if (message.location === 'Yes' && (message.text.startsWith("Here is the map to") || message.text.startsWith("Here is your requested area"))) {
         // Case 3: Render the map if location is "Yes" and there's no table or chart
         return (
-          <Paper className='messages-content' sx={{ padding: 2, backgroundColor: message.sender === 'user' ? '#bbdefb' : '#e3f2fd' }}>
+          <Paper className='messages-content' sx={{ padding: 2, backgroundColor: message.sender === 'user' ? '#F7DCB9' : '#FEFAF6' }}>
             <DynamicComponentLoader codeString={message.text} />
           </Paper>
         );
       } else {
         // Case 4: Render the text if none of the above conditions are met
         return (
-          <Paper className='messages-content' sx={{ padding: 2, backgroundColor: message.sender === 'user' ? '#bbdefb' : '#e3f2fd' }}>
+          <Paper className='messages-content' sx={{ padding: 2, backgroundColor: message.sender === 'user' ? '#F7DCB9' : '#FEFAF6' }}>
             <Typography dangerouslySetInnerHTML={{ __html: processedText }} />
           </Paper>
         );
       }
     } else {
       return (
-        <Paper className='messages-content' sx={{ padding: 2, backgroundColor: message.sender === 'user' ? '#bbdefb' : '#e3f2fd' }}>
+        <Paper className='messages-content' sx={{ padding: 2, backgroundColor: message.sender === 'user' ? '#F7DCB9' : '#FEFAF6' }}>
           <Typography dangerouslySetInnerHTML={{ __html: processedText }} />
         </Paper>
       );
@@ -627,7 +627,7 @@ function ChatPage() {
               <MenuIcon />
             </IconButton>
           )}
-          <Typography variant="h6" noWrap>
+          <Typography color='seconday' variant="h6" noWrap>
             Intel Chatbot
           </Typography>
           <PdfUploadComponent />

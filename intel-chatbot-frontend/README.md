@@ -1,70 +1,94 @@
-# Getting Started with Create React App
+# Inteliigent Chatbot React App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Description
 
-## Available Scripts
+The Chatbot React App is an advanced application built with React that integrates multiple technologies to provide a rich user experience. Key features include:
 
-In the project directory, you can run:
+- **Two-Factor Authentication (2FA):** Adds an extra layer of security to user accounts by requiring an additional verification step. Users need to download the [Microsoft Authenticator app](https://www.microsoft.com/en-us/security/mobile-authenticator-app) to complete the authentication process.
+- **Chat-4O Model:** Utilizes the sophisticated Chat-4O model for delivering intelligent and context-aware responses, enhancing the conversational quality.
+- **OpenAI API:** Leverages the [OpenAI API](https://beta.openai.com/docs/) to generate conversational responses and handle natural language processing.
+- **Google Maps API:** Integrates the [Google Maps API](https://developers.google.com/maps/documentation) to provide interactive map features and location-based functionalities.
+- **Chart and Table Generation:** Capable of generating a variety of charts and tables for data visualization using [Chart.js](https://www.chartjs.org/) and [react-chartjs-2](https://www.npmjs.com/package/react-chartjs-2).
+- **Profile Management:** Includes functionalities for users to manage their profiles, such as updating personal information, changing passwords, and deleting accounts.
 
-### `npm start`
+## Installation
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+To set up and run the Chatbot React App locally, follow these steps:
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+1. **Clone the Repository:**
 
-### `npm test`
+   ```bash
+   git clone https://github.com/SAUGO360-Internship-Project/FrontEnd_Chatbot.git
+   ```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+2. **Navigate to the Project Directory:**
 
-### `npm run build`
+   ```bash
+   cd intel-chatbot-frontend
+   ```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+3. **Install Dependencies:**
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+   ```bash
+   npm install
+   ```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+4. **Start the Application:**
 
-### `npm run eject`
+   ```bash
+   npm start
+   ```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+   The application will be available at [http://localhost:3000](http://localhost:3000).
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## Two-Factor Authentication (2FA)
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+Two-Factor Authentication enhances the security of user accounts by requiring a second form of verification. Here’s how it works:
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+1. **Setup:** During the sign-in process, users will be prompted to enter a code from the Microsoft Authenticator app.
+2. **Authentication:** Open the Microsoft Authenticator app on your mobile device to get the code.
+3. **Verification:** Enter the code into the application to complete the authentication process.
 
-## Learn More
+For more information, refer to the [Microsoft Authenticator app](https://www.microsoft.com/en-us/security/mobile-authenticator-app).
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## APIs and Libraries Used
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+- **[OpenAI API](https://beta.openai.com/docs/):** Provides the backend for generating intelligent conversational responses.
+- **[Google Maps API](https://developers.google.com/maps/documentation):** Used for interactive map features within the app.
+- **[Chart.js](https://www.chartjs.org/):** A library for creating various types of charts.
+- **[react-chartjs-2](https://www.npmjs.com/package/react-chartjs-2):** A React wrapper for Chart.js to integrate charting into React components.
 
-### Code Splitting
+## Contributor
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+1. Ihab Faour 
+2. Saadeddine Yassine
 
-### Analyzing the Bundle Size
+## Supervisors
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+1. Moussa Waked
+2. Hussein Ibrahim 
 
-### Making a Progressive Web App
+# References
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+- ChatGPT: OpenAI's language model, accessible through [ChatGPT's web interface](https://chat.openai.com/).
+- Copilot: For coding assistance, consider using [GitHub Copilot](https://copilot.github.com/).
 
-### Advanced Configuration
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+- Two-Factor Authentication (2FA):
+  - Tutorial: Check out this [YouTube Tutorial](https://www.youtube.com/watch?v=o0XZZkI69E8&t=607s).
+  - Documentation: Explore the functionality using [PyOTP Documentation](https://pyauth.github.io/pyotp/#module-pyotp).
 
-### Deployment
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+- Blueprint:
+  - Learn about Blueprint from these YouTube tutorials: [YouTube Video 1](https://www.youtube.com/watch?v=WhwU1-DLeVw) & [YouTube Video 2](https://www.youtube.com/watch?v=_LMiUOYDxzE)
 
-### `npm run build` fails to minify
+  
+- Sending emails: Utilize [Python Standard Library - Email Examples](https://docs.python.org/3/library/email.examples.html) & [Send Email via Outlook and SMTP](https://pythonassets.com/posts/send-email-via-outlook-and-smtp/) for sending emails from my App.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- For the database explore the following resources:
+  For more information on PostgreSQL, including installation, configuration, and advanced features, visit the official [PostgreSQL Documentation](https://www.postgresql.org/docs/).
+
+
+## Contact
+
+For questions or issues, please contact [iaf08@mail.aub.edu] or open an issue on GitHub.

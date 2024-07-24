@@ -1,4 +1,4 @@
-# Inteliigent Chatbot React App
+# Intelligent Chatbot React App
 
 ## Description
 

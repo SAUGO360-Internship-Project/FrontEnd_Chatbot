@@ -141,7 +141,7 @@ function UserCredentials() {
                 setEmail("");
                 setPassword("");
                 setConfirmPassword("");
-
+                
             })
             .catch((error) => {
                 alert(error.message);
@@ -155,10 +155,8 @@ function UserCredentials() {
     const handleCloseDialog = () => {
         setOpenDialog(false);
         setOpenSnackbar(true);
-        setUserName("");
-        setEmail("");
-        setPassword("");
-        setConfirmPassword("");
+        setIsSignUp(false);
+        
     };
 
     return (
@@ -191,18 +189,18 @@ function UserCredentials() {
                     {isSignUp ? (
                         <form className="sign-up-form" onSubmit={createUser}>
                             <h2>Sign Up</h2>
-                            <input type="text" placeholder="Username" required onChange={(e) => setUserName(e.target.value)} />
-                            <input type="email" placeholder="Email" required onChange={(e) => setEmail(e.target.value)} />
-                            <input type="password" placeholder="Password" required onChange={(e) => setPassword(e.target.value)} />
-                            <input type="password" placeholder="Confirm Password" required onChange={(e) => setConfirmPassword(e.target.value)} />
+                            <input type="text" placeholder="Username" value={userName} required onChange={(e) => setUserName(e.target.value)} />
+                            <input type="email" placeholder="Email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+                            <input type="password" placeholder="Password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+                            <input type="password" placeholder="Confirm Password" required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
                             <button type="submit">Submit</button>
                         </form>
                     ) : (
                         <form className="login-form" onSubmit={(e) => { e.preventDefault(); handleLogIn(userName, password, otp) }}>
                             <h2>Sign In</h2>
-                            <input type="text" placeholder="Username" required onChange={(e) => setUserName(e.target.value)} />
-                            <input type="password" placeholder="Password" required onChange={(e) => setPassword(e.target.value)} />
-                            <input type="password" placeholder="Otp" required onChange={(e) => setOtp(e.target.value)} />
+                            <input type="text" placeholder="Username" required value={userName} onChange={(e) => setUserName(e.target.value)} />
+                            <input type="password" placeholder="Password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+                            <input type="password" placeholder="Otp" required value={otp} onChange={(e) => setOtp(e.target.value)} />
                             <button type="submit" >Submit</button>
                             <div>
                                 <Link style={{ marginRight: 10 }} to="/forgot-password" className="forgot-password-link" >Forgot Password?</Link>
@@ -218,7 +216,7 @@ function UserCredentials() {
                     <QRCode value={qrcodeUrl} />
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleCloseDialog} color="primary">
+                    <Button onClick={()=> handleCloseDialog()} color="primary">
                         Done
                     </Button>
                 </DialogActions>

@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Snackbar, Grid, Avatar, Typography, TextField, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { getUserToken, clearUserEmail, clearUserName, clearUserToken } from '../localStorage';
+import AuthContext from '../AuthContext';
 import { SERVER_URL } from '../App';
 import './ProfilePage.css';
 
@@ -30,6 +31,7 @@ function ProfilePage() {
     });
     const [isChangingPassword, setIsChangingPassword] = useState(false);
     const navigate = useNavigate();
+    const {setAuth} = useContext(AuthContext);
 
     useEffect(() => {
         fetch(`${SERVER_URL}/user/profile`, {
@@ -210,7 +212,8 @@ function ProfilePage() {
                 clearUserToken();
                 clearUserEmail();
                 clearUserName();
-                navigate('App');
+                setAuth(null);
+                navigate('/login');
             })
             .catch((error) => {
                 setSnackbarMessage(error.message);
